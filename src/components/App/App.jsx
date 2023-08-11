@@ -31,6 +31,8 @@ Notify.init({
   },
 });
 
+let pageMax = 0;
+
 export const App = () => {
   const [images, setImages] = useState([]);
   const [searchValue, setSearchValue] = useState('');
@@ -42,20 +44,21 @@ export const App = () => {
   useEffect(() => {
     if (!searchValue) return;
     setShowLoader(true);
-
     getDataQuery(searchValue, page)
-      .then(dataSearchResults => {
-        if (dataSearchResults.hits.length === 0) {
+      .then(data => {
+        if (data.hits.length === 0) {
           throw new Error('Sorry, no results found !');
         }
-        setImages(prevImages => [...prevImages, ...dataSearchResults.hits]);
-        setShowLoadMore(page < Math.ceil(dataSearchResults.totalHits / 12));
+        setImages(prevImages => [...prevImages, ...data.hits]);
+        pageMax = Math.ceil(data.totalHits / 12);
+        setShowLoadMore(page < pageMax);
       })
       .catch(error => {
         setShowLoadMore(false);
         Notify.warning(error.message);
       })
       .finally(setShowLoader(false));
+    return;
   }, [searchValue, page]);
 
   const onSubmit = dataForm => {
@@ -86,7 +89,9 @@ export const App = () => {
           imagesList={images}
           showLargeImage={handleOpenCloseModal}
         />
-        {showLoadMore && <Button click={handleLoadMore} />}
+        {showLoadMore && (
+          <Button click={handleLoadMore} page={page} pageMax={pageMax} />
+        )}
         {showLoader && <Loader />}
         {showLargeImage && (
           <Modal
