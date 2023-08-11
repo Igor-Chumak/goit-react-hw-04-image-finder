@@ -19,9 +19,9 @@ export const getDataQuery = async (searchData, page = 1) => {
     q: searchData,
     page: page,
   });
-  const dataAPI = await axios.get(`?${searchParams}`);
+  const { data } = await axios.get(`?${searchParams}`);
   //   const dataAPI = await axios.get(`?q=${searchData}&page=${page}`);
-  return dataAPI.data;
+  return data;
 };
 
 getDataQuery.propType = {

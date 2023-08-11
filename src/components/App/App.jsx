@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import {
   Button,
@@ -31,87 +31,70 @@ Notify.init({
   },
 });
 
-const INIT_STATE = {
-  images: [],
-  searchValue: '',
-  page: 1,
-  showLargeImage: '',
-  showLoadMore: false,
-  showLoader: false,
-};
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [searchValue, setSearchValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [showLargeImage, setShowLargeImage] = useState('');
+  const [showLoadMore, setShowLoadMore] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
 
-export class App extends Component {
-  state = { ...INIT_STATE };
+  useEffect(() => {
+    if (!searchValue) return;
+    setShowLoader(true);
 
-  async componentDidUpdate(_, prevState) {
-    const { searchValue, page } = this.state;
-    if (prevState.page !== page || prevState.searchValue !== searchValue) {
-      try {
-        this.setState({ showLoader: true });
-        const dataSearchResults = await getDataQuery(searchValue, page);
+    getDataQuery(searchValue, page)
+      .then(dataSearchResults => {
         if (dataSearchResults.hits.length === 0) {
           throw new Error('Sorry, no results found !');
         }
-        this.setState({
-          images: [...this.state.images, ...dataSearchResults.hits],
-          // showLoadMore: dataSearchResults.hits.length === 12,
-          showLoadMore: page < Math.ceil(dataSearchResults.totalHits / 12),
-        });
-      } catch (error) {
-        this.setState({ showLoadMore: false });
+        setImages(prevImages => [...prevImages, ...dataSearchResults.hits]);
+        setShowLoadMore(page < Math.ceil(dataSearchResults.totalHits / 12));
+      })
+      .catch(error => {
+        setShowLoadMore(false);
         Notify.warning(error.message);
-      } finally {
-        this.setState({ showLoader: false });
-      }
-    }
-  }
+      })
+      .finally(setShowLoader(false));
+  }, [searchValue, page]);
 
-  onSubmit = dataForm => {
-    if (dataForm === this.state.searchValue) {
+  const onSubmit = dataForm => {
+    if (dataForm === searchValue) {
       return;
     }
-    this.setState({
-      images: [],
-      searchValue: dataForm,
-      page: 1,
-      toShowLargeImage: '',
-      showLoadMore: false,
-      showLoader: false,
-    });
+    setImages([]);
+    setSearchValue(dataForm);
+    setPage(1);
+    setShowLargeImage('');
+    setShowLoadMore(false);
+    setShowLoader(false);
   };
 
-  handleLoadMore = () => {
-    this.setState(prev => ({
-      page: prev.page + 1,
-    }));
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleOpenCloseModal = url => {
-    this.setState({
-      showLargeImage: url,
-    });
+  const handleOpenCloseModal = url => {
+    setShowLargeImage(url);
   };
 
-  render() {
-    const { images, showLoadMore, showLoader, showLargeImage } = this.state;
-    return (
-      <>
-        <Searchbar onSubmit={this.onSubmit} />
-        <main>
-          <ImageGallery
-            imagesList={images}
-            showLargeImage={this.handleOpenCloseModal}
+  return (
+    <>
+      <Searchbar onSubmit={onSubmit} />
+      <main>
+        <ImageGallery
+          imagesList={images}
+          showLargeImage={handleOpenCloseModal}
+        />
+        {showLoadMore && <Button click={handleLoadMore} />}
+        {showLoader && <Loader />}
+        {showLargeImage && (
+          <Modal
+            largeImageURL={showLargeImage}
+            handleCloseModal={handleOpenCloseModal}
           />
-          {showLoadMore && <Button click={this.handleLoadMore} />}
-          {showLoader && <Loader />}
-          {showLargeImage && (
-            <Modal
-              largeImageURL={showLargeImage}
-              handleCloseModal={this.handleOpenCloseModal}
-            />
-          )}
-        </main>
-      </>
-    );
-  }
-}
+        )}
+      </main>
+    </>
+  );
+};
