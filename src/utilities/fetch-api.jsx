@@ -21,7 +21,7 @@ export const getDataQuery = async (searchData, page = 1) => {
   });
   const dataAPI = await axios.get(`?${searchParams}`);
   //   const dataAPI = await axios.get(`?q=${searchData}&page=${page}`);
-  return dataAPI.data.hits;
+  return dataAPI.data;
 };
 
 getDataQuery.propType = {
