@@ -5,4 +5,4 @@ export * from 'components/ImageGalleryItem/ImageGalleryItem';
 export * from 'components/Searchbar/Searchbar';
 export * from 'components/Button/Button.jsx';
 export * from 'components/Loader/Loader';
-export * from 'utility/fetch-api';
+export * from 'utilities/fetch-api';

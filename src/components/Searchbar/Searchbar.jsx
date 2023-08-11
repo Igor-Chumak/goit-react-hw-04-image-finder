@@ -10,8 +10,7 @@ export const Searchbar = ({ onSubmit }) => {
     const form = e.currentTarget;
     let inputValueNormalize = inputValue.trim().toLowerCase();
     if (!inputValueNormalize) return;
-    // e.currentTarget.search.value = inputValueNormalize;
-    if (onSubmit(inputValueNormalize)) {
+    if (!onSubmit(inputValueNormalize)) {
       return;
     }
     form.reset();

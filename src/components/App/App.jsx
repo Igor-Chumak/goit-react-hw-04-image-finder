@@ -38,7 +38,6 @@ const INIT_STATE = {
   showLargeImage: '',
   showLoadMore: false,
   showLoader: false,
-  // showModal: false,
 };
 
 export class App extends Component {
@@ -57,6 +56,7 @@ export class App extends Component {
           images: [...this.state.images, ...dataSearchResults],
           showLoadMore: dataSearchResults.length === 12,
         });
+        // page < Math.ceil(data.total_results / data.per_page
       } catch (error) {
         this.setState({ showLoadMore: false });
         Notify.warning(error.message);
@@ -86,14 +86,10 @@ export class App extends Component {
     }));
   };
 
-  handleShowLargeImage = largeImageURL => {
+  handleOpenCloseModal = url => {
     this.setState({
-      showLargeImage: largeImageURL,
+      showLargeImage: url,
     });
-  };
-
-  handleCloseModal = () => {
-    this.setState({ showLargeImage: '' });
   };
 
   render() {
@@ -104,14 +100,14 @@ export class App extends Component {
         <main>
           <ImageGallery
             imagesList={images}
-            showLargeImage={this.handleShowLargeImage}
+            showLargeImage={this.handleOpenCloseModal}
           />
           {showLoadMore && <Button click={this.handleLoadMore} />}
           {showLoader && <Loader />}
           {showLargeImage && (
             <Modal
               largeImageURL={showLargeImage}
-              handleCloseModal={this.handleCloseModal}
+              handleCloseModal={this.handleOpenCloseModal}
             />
           )}
         </main>
